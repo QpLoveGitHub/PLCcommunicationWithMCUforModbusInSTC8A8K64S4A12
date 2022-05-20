@@ -1,0 +1,14 @@
+<html>
+<body>
+<pre>
+<h1>礦ision Build Log</h1>
+<h2>Project:</h2>
+C:\Users\Administrator\Desktop\STC8示例程序\26-定时器 0 中断\定时器 0 中断.uvproj
+Project File Date:  08/22/2017
+
+<h2>Output:</h2>
+Build target 'Target 1'
+compiling 定时器 0 中断.c...
+linking...
+Program Size: data=9.0 xdata=0 code=38
+"定时器 0 中断" - 0 Error(s), 0 Warning(s).

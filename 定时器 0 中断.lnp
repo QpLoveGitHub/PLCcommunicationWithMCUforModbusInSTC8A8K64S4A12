@@ -1,0 +1,10 @@
+"main.obj",
+"system.obj",
+"SystemManage.obj",
+"SystemState_Idle.obj",
+"SystemState_Normal.obj",
+"SystemState_Ready.obj",
+"timer.obj",
+"SystemManageDef.obj" 
+TO "¶¨Ê±Æ÷ 0 ÖÐ¶Ï" 
+RAMSIZE(256) 
