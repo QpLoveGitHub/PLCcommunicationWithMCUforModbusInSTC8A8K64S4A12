@@ -2,7 +2,7 @@
 // file     : SystemManageDef.h
 // S32K144 linux-t operator
 //
-// Copyright (c) 2006-2020 HSAE co. Ltd. All rights reserved
+// Copyright (c) 2006-2020 HUAWEI co. Ltd. All rights reserved
 //
 // Change Logs:
 // Date             Author        Note

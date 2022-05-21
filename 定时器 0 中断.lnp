@@ -5,6 +5,7 @@
 "SystemState_Normal.obj",
 "SystemState_Ready.obj",
 "timer.obj",
-"SystemManageDef.obj" 
+"SystemManageDef.obj",
+"usart.obj" 
 TO "¶¨Ê±Æ÷ 0 ÖÐ¶Ï" 
 RAMSIZE(256) 

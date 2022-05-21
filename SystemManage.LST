@@ -1,16 +1,16 @@
-C51 COMPILER V9.60.0.0   SYSTEMMANAGE                                                      05/21/2022 00:54:38 PAGE 1   
+C51 COMPILER V9.60.0.0   SYSTEMMANAGE                                                      05/21/2022 13:32:00 PAGE 1   
 
 
 C51 COMPILER V9.60.0.0, COMPILATION OF MODULE SYSTEMMANAGE
 OBJECT MODULE PLACED IN SystemManage.OBJ
-COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE SystemManage.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND TABS(2)
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE SystemManage.c LARGE OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND TABS(2)
 
 line level    source
 
    1          //*****************************************************************************
    2          // file     : SystemManage.c
    3          //
-   4          // Copyright (c) 2011-2020 HSAE co. Ltd. All rights reserved
+   4          // Copyright (c) 2011-2020  HUAWEI co. Ltd. All rights reserved
    5          //
    6          // Change Logs:
    7          // Date             Author      Note
@@ -62,7 +62,7 @@ line level    source
   53          #define Event_gotosleep_to_sleep        7
   54          #define Event_gotosleep_to_deepsleep      8
   55          #define Event_sleep_to_open           9
-C51 COMPILER V9.60.0.0   SYSTEMMANAGE                                                      05/21/2022 00:54:38 PAGE 2   
+C51 COMPILER V9.60.0.0   SYSTEMMANAGE                                                      05/21/2022 13:32:00 PAGE 2   
 
   56          #define Event_deepsleep_to_wakeup       10
   57          /** add timestamp */
@@ -126,7 +126,7 @@ line level    source
  115            * \param NONE
  116            *
  117            * \return NONE
-C51 COMPILER V9.60.0.0   SYSTEMMANAGE                                                      05/21/2022 00:54:38 PAGE 3   
+C51 COMPILER V9.60.0.0   SYSTEMMANAGE                                                      05/21/2022 13:32:00 PAGE 3   
 
  118            */
  119          int SystemState_Get_Stamp(void)
@@ -190,7 +190,7 @@ line level    source
  177   2              Counter.TimeCounter10ms = 0;
  178   2              break;
  179   2          case System_TimeSlice_20ms:
-C51 COMPILER V9.60.0.0   SYSTEMMANAGE                                                      05/21/2022 00:54:38 PAGE 4   
+C51 COMPILER V9.60.0.0   SYSTEMMANAGE                                                      05/21/2022 13:32:00 PAGE 4   
 
  180   2              Counter.TimeCounter20ms = 0;
  181   2              break;
@@ -254,7 +254,7 @@ line level    source
  239   1          unsigned char TimeSlice_Obtain_result = 0;
  240   1          switch (TimeSlice_Item)
  241   1          {
-C51 COMPILER V9.60.0.0   SYSTEMMANAGE                                                      05/21/2022 00:54:38 PAGE 5   
+C51 COMPILER V9.60.0.0   SYSTEMMANAGE                                                      05/21/2022 13:32:00 PAGE 5   
 
  242   2          case System_TimeSlice_1ms:
  243   2              if (Counter.TimeCounter1ms == 2)
@@ -318,7 +318,7 @@ line level    source
  301   3                  {
  302   4                      Counter.TimeCounter100ms++;
  303   4                  }
-C51 COMPILER V9.60.0.0   SYSTEMMANAGE                                                      05/21/2022 00:54:38 PAGE 6   
+C51 COMPILER V9.60.0.0   SYSTEMMANAGE                                                      05/21/2022 13:32:00 PAGE 6   
 
  304   3                  if (Counter.TimeCounter200ms < System_TimeSlice_200ms) //200ms
  305   3                  {
@@ -382,7 +382,7 @@ line level    source
  363   2              {
  364   3                  SystemState_TimeSlice_Reset(System_TimeSlice_6ms);
  365   3                  TimeSlice_Obtain_result = System_TimeSlice_ObtainSuccess;
-C51 COMPILER V9.60.0.0   SYSTEMMANAGE                                                      05/21/2022 00:54:38 PAGE 7   
+C51 COMPILER V9.60.0.0   SYSTEMMANAGE                                                      05/21/2022 13:32:00 PAGE 7   
 
  366   3              }
  367   2              break;
@@ -446,7 +446,7 @@ line level    source
  425   2          case System_TimeSlice_200ms:
  426   2              if (Counter.TimeCounter200ms == System_TimeSlice_200ms)
  427   2              {
-C51 COMPILER V9.60.0.0   SYSTEMMANAGE                                                      05/21/2022 00:54:38 PAGE 8   
+C51 COMPILER V9.60.0.0   SYSTEMMANAGE                                                      05/21/2022 13:32:00 PAGE 8   
 
  428   3                  SystemState_TimeSlice_Reset(System_TimeSlice_200ms);
  429   3                  TimeSlice_Obtain_result = System_TimeSlice_ObtainSuccess;
@@ -510,7 +510,7 @@ line level    source
  487            * \return NONE
  488            */
  489          void SystemState_NextState_Set(unsigned char systemState)
-C51 COMPILER V9.60.0.0   SYSTEMMANAGE                                                      05/21/2022 00:54:38 PAGE 9   
+C51 COMPILER V9.60.0.0   SYSTEMMANAGE                                                      05/21/2022 13:32:00 PAGE 9   
 
  490          {
  491   1          SystemState.NextState = systemState;
@@ -529,41 +529,42 @@ line level    source
  504   1        {
  505   2          case SystemState_Idle:
  506   2          {
- 507   3            SystemState_TimeSlice_Reset(System_TimeSlice_Max);
- 508   3            SystemState_CurrentState_Set(SystemState_Ready);
- 509   3          }
- 510   2          break;
- 511   2      
- 512   2          case SystemState_Ready:
- 513   2          {
- 514   3            SystemState_Ready_Task();
- 515   3            SystemState_TimeSlice_Reset(System_TimeSlice_Max);
- 516   3            SystemState_CurrentState_Set(SystemState_Normal);
- 517   3          }
- 518   2      
- 519   2          break;
- 520   2      
- 521   2          case SystemState_Normal:
- 522   2          {
- 523   3            System_Nomal_Task();
- 524   3          }
- 525   2          break;
- 526   2      
- 527   2          default:
- 528   2          break;
- 529   2        }
- 530   1        return(SystemState.CurrentState);
- 531   1      }
- 532          
+ 507   3            System_Idle_Task();
+ 508   3            SystemState_TimeSlice_Reset(System_TimeSlice_Max);
+ 509   3            SystemState_CurrentState_Set(SystemState_Ready);
+ 510   3          }
+ 511   2          break;
+ 512   2      
+ 513   2          case SystemState_Ready:
+ 514   2          {
+ 515   3            SystemState_Ready_Task();
+ 516   3            SystemState_TimeSlice_Reset(System_TimeSlice_Max);
+ 517   3            SystemState_CurrentState_Set(SystemState_Normal);
+ 518   3          }
+ 519   2      
+ 520   2          break;
+ 521   2      
+ 522   2          case SystemState_Normal:
+ 523   2          {
+ 524   3            System_Normal_Task();
+ 525   3          }
+ 526   2          break;
+ 527   2      
+ 528   2          default:
+ 529   2          break;
+ 530   2        }
+ 531   1        return(SystemState.CurrentState);
+ 532   1      }
  533          
+ 534          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    870    ----
+   CODE SIZE        =   1047    ----
    CONSTANT SIZE    =    193    ----
-   XDATA SIZE       =   ----    ----
+   XDATA SIZE       =     32       1
    PDATA SIZE       =   ----    ----
-   DATA SIZE        =     32       1
+   DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----
    BIT SIZE         =   ----    ----
 END OF MODULE INFORMATION.

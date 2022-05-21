@@ -1,9 +1,10 @@
-C51 COMPILER V9.60.0.0   SYSTEMSTATE_NORMAL                                                05/21/2022 00:54:38 PAGE 1   
+C51 COMPILER V9.60.0.0   SYSTEMSTATE_NORMAL                                                05/21/2022 14:11:23 PAGE 1   
 
 
 C51 COMPILER V9.60.0.0, COMPILATION OF MODULE SYSTEMSTATE_NORMAL
 OBJECT MODULE PLACED IN SystemState_Normal.OBJ
-COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE SystemState_Normal.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND TABS(2)
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE SystemState_Normal.c LARGE OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND T
+                    -ABS(2)
 
 line level    source
 
@@ -12,90 +13,113 @@ line level    source
    3          #include "SystemState_Normal.h"
    4          #include "SystemManage.h"
    5          #include "type.h"
-   6          
-   7          #define LD3 P11
-   8          #define LD4 P10
-   9          
-  10          sbit P10 = P1^0;
-  11          sbit P11 = P1^1;
-  12          
-  13          static u8 g_10ms_cnt = 0;
+   6          #include "usart.h"
+   7          #include "string.h"
+   8          
+   9          #define LD3 P11
+  10          #define LD4 P10
+  11          
+  12          sbit P10 = P1^0;
+  13          sbit P11 = P1^1;
   14          
-  15          void System_Nomal_Task(void)
-  16          {
-  17   1        if (SystemState_TimeSlice_Obtain(System_TimeSlice_1ms)  == System_TimeSlice_ObtainSuccess)
-  18   1          {
-  19   2      
-  20   2          if (SystemState_TimeSlice_Obtain(System_TimeSlice_10ms)//10ms
-  21   2            == System_TimeSlice_ObtainSuccess)
-  22   2          {
-  23   3              if(g_10ms_cnt++ >= 20)
-  24   3              {
-  25   4                g_10ms_cnt = 0;
-  26   4                LD3 = !LD3;
-  27   4              }
-  28   3              
-  29   3            
-  30   3          }
-  31   2      
-  32   2           if (SystemState_TimeSlice_Obtain(System_TimeSlice_20ms)//20ms
-  33   2                      == System_TimeSlice_ObtainSuccess)
-  34   2              {
-  35   3                
-  36   3              }
-  37   2      
-  38   2          if (SystemState_TimeSlice_Obtain(System_TimeSlice_50ms)
-  39   2                      == System_TimeSlice_ObtainSuccess)
-  40   2              {
-  41   3            //LEDred_TOOGLE;
-  42   3                //LD4 = !LD4;
-  43   3              }   
-  44   2      
-  45   2           if (SystemState_TimeSlice_Obtain(System_TimeSlice_100ms)
-  46   2                      == System_TimeSlice_ObtainSuccess)
-  47   2              {
-  48   3              }
-  49   2      
-  50   2           if (SystemState_TimeSlice_Obtain(System_TimeSlice_200ms)
-  51   2                      == System_TimeSlice_ObtainSuccess)
-  52   2              {
-  53   3              }
-  54   2      
-  55   2          if (SystemState_TimeSlice_Obtain(System_TimeSlice_500ms)
-C51 COMPILER V9.60.0.0   SYSTEMSTATE_NORMAL                                                05/21/2022 00:54:38 PAGE 2   
+  15          static u8 g_10ms_cnt = 0;
+  16          u32 g_10ms_uart2_recv_timeout = 0;
+  17          
+  18          void System_Normal_Task(void)
+  19          {
+  20   1        u8 i;
+  21   1        
+  22   1        if (SystemState_TimeSlice_Obtain(System_TimeSlice_1ms)  == System_TimeSlice_ObtainSuccess)
+  23   1          {
+  24   2      
+  25   2          if (SystemState_TimeSlice_Obtain(System_TimeSlice_10ms)//10ms
+  26   2            == System_TimeSlice_ObtainSuccess)
+  27   2          {
+  28   3              if(g_10ms_cnt++ >= 20)
+  29   3              {
+  30   4                g_10ms_cnt = 0;
+  31   4                //LD3 = !LD3;
+  32   4              }
+  33   3              if(g_10ms_uart2_recv_timeout++ >= 20)
+  34   3              {
+  35   4                Usart2_Runtime_Var.Uart_RecvData_IsNewFrame = true;
+  36   4                g_10ms_uart2_recv_timeout = 0;
+  37   4              }
+  38   3            
+  39   3          }
+  40   2      
+  41   2           if (SystemState_TimeSlice_Obtain(System_TimeSlice_20ms)//20ms
+  42   2                      == System_TimeSlice_ObtainSuccess)
+  43   2              {
+  44   3                
+  45   3              }
+  46   2      
+  47   2          if (SystemState_TimeSlice_Obtain(System_TimeSlice_50ms)
+  48   2                      == System_TimeSlice_ObtainSuccess)
+  49   2              {
+  50   3            //LEDred_TOOGLE;
+  51   3                //LD4 = !LD4;
+  52   3            if((false == Usart2_Runtime_Var.Uart_RecvData_IsNewFrame) && (true == Usart2_Runtime_Var.Uart_RecvData_
+             -Notificatio))
+  53   3            {
+C51 COMPILER V9.60.0.0   SYSTEMSTATE_NORMAL                                                05/21/2022 14:11:23 PAGE 2   
 
-  56   2                      == System_TimeSlice_ObtainSuccess)
-  57   2              {
-  58   3          }
-  59   2      
-  60   2          if (SystemState_TimeSlice_Obtain(System_TimeSlice_1s)
-  61   2                      == System_TimeSlice_ObtainSuccess)
-  62   2          {
-  63   3            LD4 = !LD4;
-  64   3          }
-  65   2      
-  66   2          if (SystemState_TimeSlice_Obtain(System_TimeSlice_2s)
-  67   2                  == System_TimeSlice_ObtainSuccess)
-  68   2          {
-  69   3      
-  70   3          }
+  54   4      #if 1
+  55   4              for(i = 0;i <Usart2_Runtime_Var.Uart_RecvData_Pos;i++)
+  56   4              {
+  57   5                SendData(Usart2_Runtime_Var.Local_Uart2Rec_Buf[i]);
+  58   5              }
+  59   4              memset(Usart2_Runtime_Var.Local_Uart2Rec_Buf,0x0,50);
+  60   4              Usart2_Runtime_Var.Uart_RecvData_Notificatio = false;
+  61   4              Usart2_Runtime_Var.Uart_RecvData_Pos = 0;
+  62   4      #endif      
+  63   4            }
+  64   3                
+  65   3              }   
+  66   2      
+  67   2           if (SystemState_TimeSlice_Obtain(System_TimeSlice_100ms)
+  68   2                      == System_TimeSlice_ObtainSuccess)
+  69   2              {
+  70   3              }
   71   2      
-  72   2          if (SystemState_TimeSlice_Obtain(System_TimeSlice_5s)
-  73   2                  == System_TimeSlice_ObtainSuccess)
-  74   2          {
-  75   3              //LD3 = !LD3;
-  76   3          }
-  77   2        }
-  78   1      }
-  79          
+  72   2           if (SystemState_TimeSlice_Obtain(System_TimeSlice_200ms)
+  73   2                      == System_TimeSlice_ObtainSuccess)
+  74   2              {
+  75   3              }
+  76   2      
+  77   2          if (SystemState_TimeSlice_Obtain(System_TimeSlice_500ms)
+  78   2                      == System_TimeSlice_ObtainSuccess)
+  79   2              {
+  80   3          }
+  81   2      
+  82   2          if (SystemState_TimeSlice_Obtain(System_TimeSlice_1s)
+  83   2                      == System_TimeSlice_ObtainSuccess)
+  84   2          {
+  85   3            //LD4 = !LD4;
+  86   3          }
+  87   2      
+  88   2          if (SystemState_TimeSlice_Obtain(System_TimeSlice_2s)
+  89   2                  == System_TimeSlice_ObtainSuccess)
+  90   2          {
+  91   3      
+  92   3          }
+  93   2      
+  94   2          if (SystemState_TimeSlice_Obtain(System_TimeSlice_5s)
+  95   2                  == System_TimeSlice_ObtainSuccess)
+  96   2          {
+  97   3              //LD3 = !LD3;
+  98   3          }
+  99   2        }
+ 100   1      }
+ 101          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    106    ----
+   CODE SIZE        =    216    ----
    CONSTANT SIZE    =   ----    ----
-   XDATA SIZE       =   ----    ----
+   XDATA SIZE       =      3       1
    PDATA SIZE       =   ----    ----
-   DATA SIZE        =      1    ----
+   DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----
    BIT SIZE         =   ----    ----
 END OF MODULE INFORMATION.
