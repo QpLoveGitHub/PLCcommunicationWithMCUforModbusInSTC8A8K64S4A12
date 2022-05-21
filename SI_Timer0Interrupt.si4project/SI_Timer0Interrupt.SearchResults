@@ -1,0 +1,25 @@
+---- StTimer Matches (24 in 3 files) ----
+modbustimer.c line 6 : StTimer	g_Modbus_Timer[ModbusTimer_MAX] =
+softtimer.c line 44 : void	Timer_Init(StTimer * p,int timer_num)
+softtimer.c line 55 : void	Timer_Enable(StTimer * p)
+softtimer.c line 61 : void	Timer_Disable(StTimer * p)
+softtimer.c line 67 : void	Timer_SetTimeout(StTimer * p,u32 timeout)
+softtimer.c line 74 : bool	Timer_IsEnable(StTimer * p)
+softtimer.c line 81 : bool	Timer_IsTimeout(StTimer * p)
+softtimer.c line 88 : void	Timer_Update(StTimer * p)	//?üD?ò?????ê±?÷
+softtimer.c line 97 : void	Timer_SetFlag(StTimer * p)	//????ò?????ê±?÷3?ê±
+softtimer.c line 106 : void	Timer_Start(StTimer * p)
+softtimer.c line 112 : void	Timer_End(StTimer * p)
+softtimer.c line 118 : void	Timer_Proc(StTimer * p,int timer_num)
+_StTimer in softtimer.h : }StTimer;
+softtimer.h line 19 : void	Timer_Init(StTimer * p,int timer_num);
+softtimer.h line 20 : void	Timer_Enable(StTimer * p);
+softtimer.h line 21 : void	Timer_Disable(StTimer * p);
+softtimer.h line 22 : bool	Timer_IsEnable(StTimer * p);
+softtimer.h line 23 : void	Timer_SetTimeout(StTimer * p,u32 timeout);
+softtimer.h line 24 : bool	Timer_IsTimeout(StTimer * p);
+softtimer.h line 25 : void	Timer_Update(StTimer * p);
+softtimer.h line 26 : void	Timer_SetFlag(StTimer * p);
+softtimer.h line 27 : void	Timer_Start(StTimer * p);
+softtimer.h line 28 : void	Timer_End(StTimer * p);
+softtimer.h line 29 : void	Timer_Proc(StTimer * p,int timer_num);

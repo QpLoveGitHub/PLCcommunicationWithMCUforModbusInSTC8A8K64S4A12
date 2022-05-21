@@ -18,13 +18,15 @@ Hex Converter:   OH51.exe V2.7.0.0
 CPU DLL:         S8051.DLL V3.122.0.0
 Dialog DLL:      DP51.DLL V2.67.0.0 
 <h2>Project:</h2>
-C:\Users\Administrator.SKY-20201203EBA\Desktop\新建文件夹\PLCcommunicationWithMCUforModbusInSTC8A8K64S4A12\定时器 0 中断.uvproj
-Project File Date:  05/21/2022
+E:\WORK\02 parttime\parttime_job\代做微信号知足常乐项目PLC和MCU系统通讯\WORK\TransplantFromCN202SR\026-定时器 0 中断\定时器 0 中断.uvproj
+Project File Date:  05/22/2022
 
 <h2>Output:</h2>
 Build target 'Target 1'
-compiling SystemState_Normal.c...
-compiling timer.c...
+compiling register.c...
+register.c(176): warning C280: 'len': unreferenced local variable
+register.c(258): warning C280: 'p': unreferenced local variable
+register.c(300): warning C280: 'len': unreferenced local variable
 linking...
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
     SEGMENT: ?PR?SYSTEMSTATE_GET_STAMP?SYSTEMMANAGE
@@ -32,10 +34,22 @@ linking...
     SEGMENT: ?PR?_SYSTEMSTATE_SET_STAMP?SYSTEMMANAGE
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
     SEGMENT: ?PR?_SYSTEMSTATE_NEXTSTATE_SET?SYSTEMMANAGE
-Program Size: data=17.2 xdata=126 code=2680
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_USART2_REVCIVE_ONEBYTE?USART
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_MODBUS_CRC16_CHECK?CRC
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_REG_MODBUS_EXCEPTION_RESPONSE?REGISTER
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_REG_MODBUS_TIMER_OUT?REGISTER
+*** WARNING L15: MULTIPLE CALL TO SEGMENT
+    SEGMENT: ?PR?_TIMER_USINGTIMER0_STARTTIMER?TIMER_USINGTIMER0
+    CALLER1: ?PR?UART2?USART
+    CALLER2: ?C_C51STARTUP
+Program Size: data=17.2 xdata=768 code=4940
 creating hex file from "定时器 0 中断"...
-"定时器 0 中断" - 0 Error(s), 3 Warning(s).
-Build Time Elapsed:  00:00:03
+"定时器 0 中断" - 0 Error(s), 11 Warning(s).
+Build Time Elapsed:  00:00:01
 </pre>
 </body>
 </html>

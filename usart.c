@@ -2,6 +2,7 @@
 #include "intrins.h"	
 #include "usart.h"
 #include "type.h"
+#include "register.h"
 
 bit busy;
 bit flag;
@@ -71,7 +72,10 @@ void Uart2() interrupt 8 using 1
         S2CON &= ~S2RI;         //??3yS2RI??
         //sendByte = S2BUF;              //??¨¨?¡ä??¨²?¨®¨º?¨ºy?Y
         tmp = S2BUF;
-        Usart2_Revcive_OneByte(tmp);
+#ifdef TEST_USART2
+        //Usart2_Revcive_OneByte(tmp);
+#endif
+        reg_command_receive(tmp);
 		flag = 1;	
     }
     if (S2CON & S2TI)

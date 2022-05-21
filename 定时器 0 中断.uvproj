@@ -421,6 +421,21 @@
               <FileType>1</FileType>
               <FilePath>.\usart.c</FilePath>
             </File>
+            <File>
+              <FileName>crc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\crc.c</FilePath>
+            </File>
+            <File>
+              <FileName>register.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\register.c</FilePath>
+            </File>
+            <File>
+              <FileName>timer_usingTimer0.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\timer_usingTimer0.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>

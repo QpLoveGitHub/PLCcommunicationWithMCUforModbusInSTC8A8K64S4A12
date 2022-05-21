@@ -1,0 +1,368 @@
+C51 COMPILER V9.60.0.0   REGISTER                                                          05/22/2022 00:56:52 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE REGISTER
+OBJECT MODULE PLACED IN register.OBJ
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE register.c LARGE OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND TABS(2)
+
+line level    source
+
+   1          #include "type.h"
+   2          #include "register.h"
+   3          #include "timer.h"
+   4          #include "usart.h"
+   5          #include "softtimer.h"
+   6          #include "string.h"
+   7          #include "crc.h"
+   8          #include "main.h"
+   9          #include "timer_usingTimer0.h"
+  10          
+  11          typedef struct {
+  12              u8          received;
+  13              u8          waiting_head_byte;
+  14              u8          pos;
+  15              u8          packet_data[256];
+  16              TIMER_ID    terminal_timerid;
+  17          } reg_context_t;
+  18          
+  19          
+  20          reg_context_t reg_context;
+  21          
+  22          u16 __reg_data[REGISTER_DATA_LEN] = 
+  23          {
+  24            TEST_ADDRESS0_DATA,
+  25            TEST_ADDRESS1_DATA,
+  26          };
+  27          u16 __local_reg_data[120] = {0};
+  28          
+  29          u8 reg_single_write_process(u8 *buf, u16 len);
+  30          u8 reg_modbus_single_write_command_response();
+  31          
+  32          
+  33          void Notify_ModbusRtu_Register_IsReceived_Message(void)
+  34          {
+  35   1        if(true == timer_usingTimer0_IsTimerout(0,5))
+  36   1        {
+  37   2          
+  38   2          //SendString("timer version 2022-5-21 v00000000000000000000\r\n");
+  39   2          //P10 = !P10;
+  40   2          reg_context.received = true;
+  41   2          timer_usingTimer0_StopTimer(0);
+  42   2        }
+  43   1      }
+  44          
+  45          
+  46          u8 reg_write(u16 reg_address, void *reg_value, u16 reg_num)
+  47          {    
+  48   1          memcpy((void *)&__reg_data[reg_address], reg_value, 2*reg_num);
+  49   1          
+  50   1          return 0;
+  51   1      }
+  52          
+  53          u8 reg_read(u16 reg_address, void *reg_value, u16 reg_num)
+  54          {
+  55   1          memcpy(reg_value, (void *)&__reg_data[reg_address], 2*reg_num);
+C51 COMPILER V9.60.0.0   REGISTER                                                          05/22/2022 00:56:52 PAGE 2   
+
+  56   1          
+  57   1          return 0;
+  58   1      }
+  59          
+  60          u8 reg_command_receive(u8 rdata)
+  61          {
+  62   1          if (reg_context.waiting_head_byte == TRUE)
+  63   1          {
+  64   2              // 如果是接收到的第一个字节 则判断下是否是EDA的数据包头 不是则直接返回
+  65   2              if (rdata != rtu_address)
+  66   2              //if (rdata != 0x01)
+  67   2              {
+  68   3                  // 所有的EDA应答数据包都是由EDA_PACKET_HEAD开始 这样可以有效过滤到非法字符
+  69   3                  return -1;
+  70   3              }
+  71   2      
+  72   2              reg_context.waiting_head_byte = FALSE;        
+  73   2              reg_context.received = FALSE;
+  74   2      
+  75   2              reg_context.pos = 0;
+  76   2              reg_context.packet_data[reg_context.pos++] = rdata;
+  77   2      
+  78   2              //timerStart(g_hTimer, reg_context.terminal_timerid, FALSE);
+  79   2              timer_usingTimer0_StartTimer(0);
+  80   2          }
+  81   1          else
+  82   1          {
+  83   2              // 如果连续收到的数据超过了规定的最大长度 则忽略后续接收到的数据
+  84   2              if (reg_context.pos >= MODBUS_MAX_PACKET_LEN)
+  85   2              {
+  86   3                 // timerStart(g_hTimer, reg_context.terminal_timerid, FALSE);
+  87   3                  return 0;
+  88   3              }
+  89   2      
+  90   2              reg_context.packet_data[reg_context.pos++] = rdata;
+  91   2              //timerStart(g_hTimer, reg_context.terminal_timerid, FALSE);
+  92   2              timer_usingTimer0_StartTimer(0);
+  93   2          }
+  94   1      
+  95   1          return 0;
+  96   1      }
+  97          
+  98          void reg_modbus_send_response_packet(u8 *buf, u16 len)
+  99          {
+ 100   1          u16 i;
+ 101   1      
+ 102   1          //REG_485_OUTPUT_ENABLE;
+ 103   1      
+ 104   1          for (i=0; i<len; i++)
+ 105   1          {
+ 106   2              REG_PUTCHAR(buf[i]);
+ 107   2          }
+ 108   1      
+ 109   1          //REG_485_OUTPUT_DISABLE;
+ 110   1      }
+ 111          
+ 112          u8 reg_modbus_crc_check(u8 *buf, u16 len)
+ 113          {
+ 114   1          u8  crch;
+ 115   1          u8  crcl;
+ 116   1          u16 crc;
+ 117   1      
+C51 COMPILER V9.60.0.0   REGISTER                                                          05/22/2022 00:56:52 PAGE 3   
+
+ 118   1          if (len < 8)
+ 119   1          {
+ 120   2              //DEBUG_ERROR("crc len invalid %d\r\n", len);
+ 121   2              return -1;
+ 122   2          }
+ 123   1      
+ 124   1          crc = modbus_crc16(buf, len - 2);
+ 125   1          crch = (U8)(crc >> 8);
+ 126   1          crcl = (U8)(crc);
+ 127   1      
+ 128   1          if ((crcl != buf[len - 2]) || (crch != buf[len - 1]))
+ 129   1          {
+ 130   2              //DEBUG_ERROR("crc[%x] is invalid crc1[%x] crc2[%x]\r\n", crc, buf[len-2], buf[len-1]);
+ 131   2              return -2;
+ 132   2          }
+ 133   1      
+ 134   1          return 0;
+ 135   1      }
+ 136          
+ 137          u8 reg_modbus_exception_response(u8 command, u8 errcode)
+ 138          {
+ 139   1          u16 crc = 0;
+ 140   1          
+ 141   1          reg_context.packet_data[0] = rtu_address; //0x01;
+ 142   1          reg_context.packet_data[1] = 0x80 | command;
+ 143   1          reg_context.packet_data[2] = errcode;
+ 144   1          crc = modbus_crc16(reg_context.packet_data, 3);
+ 145   1          reg_context.packet_data[3] = (u8)(crc);
+ 146   1          reg_context.packet_data[4] = (u8)(crc >> 8);
+ 147   1      
+ 148   1          reg_modbus_send_response_packet(reg_context.packet_data, 5);
+ 149   1              
+ 150   1          return 0;
+ 151   1      }
+ 152          
+ 153          u8 reg_modbus_multi_read_command_response(u16 *reg_data, u16 reg_num)
+ 154          {
+ 155   1          u8  i = 0;
+ 156   1          u16 crc = 0;
+ 157   1          
+ 158   1          reg_context.packet_data[0] = rtu_address; //0x01;
+ 159   1          reg_context.packet_data[1] = 0x03;
+ 160   1          reg_context.packet_data[2] = 2*reg_num;
+ 161   1          for (i=0; i<reg_num; i++)
+ 162   1          {
+ 163   2              reg_context.packet_data[3+2*i]   = (u8)(reg_data[i] >> 8);
+ 164   2              reg_context.packet_data[3+2*i+1] = (u8)(reg_data[i]);
+ 165   2          }
+ 166   1      
+ 167   1          crc = modbus_crc16(reg_context.packet_data, 3+2*reg_num);
+ 168   1          reg_context.packet_data[3+2*reg_num]   = (u8)(crc);
+ 169   1          reg_context.packet_data[3+2*reg_num+1] = (u8)(crc >> 8);
+ 170   1      
+ 171   1          reg_modbus_send_response_packet(reg_context.packet_data, 5+2*reg_num);
+ 172   1              
+ 173   1          return 0;
+ 174   1      }
+ 175          
+ 176          u8 reg_multi_read_process(u8 *buf, u16 len)
+ 177          {
+ 178   1          u16 reg_addr;
+ 179   1          u16 reg_num;   
+C51 COMPILER V9.60.0.0   REGISTER                                                          05/22/2022 00:56:52 PAGE 4   
+
+ 180   1      
+ 181   1          reg_addr = ccts(buf[2], buf[3]);
+ 182   1          reg_num  = ccts(buf[4], buf[5]);
+ 183   1          
+ 184   1          if (reg_num > 120)
+ 185   1          {
+ 186   2      //        DEBUG_ERROR("REG: reg num %d is out of scope\r\n", reg_num);
+ 187   2              return -1;
+ 188   2          }
+ 189   1          
+ 190   1      //    DEBUG_TRACE("REG: modbus read command\r\n");
+ 191   1      //    DEBUG_TRACE("REG: modbus reg begin addr %d\r\n", reg_addr);
+ 192   1      //    DEBUG_TRACE("REG: modbus reg addr num %d\r\n", reg_num);
+ 193   1          
+ 194   1          memset(__local_reg_data, 0, sizeof(__local_reg_data));
+ 195   1          reg_read(reg_addr, __local_reg_data, reg_num);
+ 196   1          reg_modbus_multi_read_command_response(__local_reg_data, reg_num);
+ 197   1          
+ 198   1          return 0;
+ 199   1      }
+*** WARNING C280 IN LINE 176 OF register.c: 'len': unreferenced local variable
+ 200          
+ 201          u8 reg_request_dispatch(u8 *buf, u16 len)
+ 202          {
+ 203   1          u8   rtv = 0;    
+ 204   1      
+ 205   1          rtv = reg_modbus_crc_check(buf, len);
+ 206   1          if (0 != rtv)
+ 207   1          {
+ 208   2      //        DEBUG_ERROR("REG: modbus crc check failed with errcode %d\r\n", rtv);
+ 209   2              return -1;
+ 210   2          }
+ 211   1      
+ 212   1          if (buf[0] != rtu_address)
+ 213   1          //if (buf[0] != REG_MODBUS_MASTER_ADDR)
+ 214   1          {
+ 215   2      //        DEBUG_ERROR("REG: invalid dev address %d\r\n", buf[0]);
+ 216   2              return -1;
+ 217   2          }
+ 218   1      
+ 219   1          if ((buf[1] != REG_MODBUS_OPR_MULTI_READ)
+ 220   1           && (buf[1] != REG_MODBUS_OPR_MULTI_WRITE)
+ 221   1           && (buf[1] != REG_MODBUS_OPR_SINGLE_WRITE)
+ 222   1          )
+ 223   1          {
+ 224   2      //        DEBUG_ERROR("REG: invalid modbus opr command %d\r\n", buf[1]);
+ 225   2              return -1;
+ 226   2          }
+ 227   1      
+ 228   1          switch (buf[1])
+ 229   1          {
+ 230   2              case REG_MODBUS_OPR_MULTI_READ:     // 读
+ 231   2      //            DEBUG_ERROR("1111111111111\r\n");
+ 232   2                  reg_multi_read_process(buf, len);
+ 233   2                  break;
+ 234   2              case REG_MODBUS_OPR_MULTI_WRITE:    // 写多地址
+ 235   2      //            DEBUG_ERROR("1111111111112\r\n");
+ 236   2      //            reg_multi_write_process(buf, len);
+ 237   2                  break;
+ 238   2              case REG_MODBUS_OPR_SINGLE_WRITE:   
+ 239   2      //            DEBUG_ERROR("1111111111113\r\n"); // 写单地址
+ 240   2                  reg_single_write_process(buf, len);
+C51 COMPILER V9.60.0.0   REGISTER                                                          05/22/2022 00:56:52 PAGE 5   
+
+ 241   2                  break;
+ 242   2              case BIT_MODBUS_OPR_READ:
+ 243   2            break;
+ 244   2          
+ 245   2          case BIT_MODBUS_OPR_WRITE:
+ 246   2            break;
+ 247   2      
+ 248   2          case REG_MODBUS_READ_INPUT_REGISTER:
+ 249   2            break;
+ 250   2            
+ 251   2          default:
+ 252   2                  break;
+ 253   2          }
+ 254   1      
+ 255   1          return 0;
+ 256   1      }
+ 257          
+ 258          void reg_modbus_timer_out(void *p)
+ 259          {
+ 260   1          reg_context.received  = TRUE;
+ 261   1      }
+*** WARNING C280 IN LINE 258 OF register.c: 'p': unreferenced local variable
+ 262          
+ 263          void reg_init()
+ 264          {
+ 265   1          memset(&reg_context, 0, sizeof(reg_context));
+ 266   1          reg_context.waiting_head_byte = TRUE;
+ 267   1          
+ 268   1          //reg_context.terminal_timerid = timerRegister(g_hTimer, 2, reg_modbus_timer_out, NULL);  //2
+ 269   1        
+ 270   1      } 
+ 271          
+ 272          void reg_monitor()
+ 273          {
+ 274   1          if (reg_context.received)
+ 275   1          {   
+ 276   2          
+ 277   2      //    if (test_tt2==0)
+ 278   2      //    {
+ 279   2      //      test_tt2 = 1;
+ 280   2      //      GPIO_SetBits(PORT_PIN_LED1, PIN_LED2);
+ 281   2      //    }
+ 282   2      //    else
+ 283   2      //    {
+ 284   2      //      test_tt2 = 0;
+ 285   2      //      GPIO_ResetBits(PORT_PIN_LED1, PIN_LED2);
+ 286   2      //      
+ 287   2      //    }
+ 288   2      
+ 289   2              reg_context.waiting_head_byte = TRUE;
+ 290   2          
+ 291   2      //        DEBUG_ERROR("reg_test =%d\r\n", reg_test++);
+ 292   2              reg_request_dispatch(reg_context.packet_data, reg_context.pos);
+ 293   2      
+ 294   2              reg_context.pos = 0;
+ 295   2              reg_context.received = FALSE;        
+ 296   2          }
+ 297   1      }
+ 298          
+ 299          
+ 300          u8 reg_single_write_process(u8 *buf, u16 len)
+ 301          {
+C51 COMPILER V9.60.0.0   REGISTER                                                          05/22/2022 00:56:52 PAGE 6   
+
+ 302   1          u16 reg_addr;    
+ 303   1      
+ 304   1          reg_addr = ccts(buf[2], buf[3]);
+ 305   1      
+ 306   1            
+ 307   1      //    if (-1 == is_allow_to_write(reg_addr))
+ 308   1      //    {
+ 309   1      //        //DEBUG_ERROR("the reg address[%d] is not allowed to be updated since no permission\r\n", reg_ad
+             -dr);
+ 310   1      //        reg_modbus_exception_response(REG_MODBUS_OPR_SINGLE_WRITE, _errcode_INVALID_DATA_ADDRESS);
+ 311   1      //        return -1;
+ 312   1      //    }
+ 313   1          
+ 314   1          memset(__local_reg_data, 0, sizeof(__local_reg_data));
+ 315   1          __local_reg_data[0] = ccts(buf[4], buf[5]);
+ 316   1          reg_write(reg_addr, __local_reg_data, 1);
+ 317   1      
+ 318   1             
+ 319   1          reg_modbus_single_write_command_response();
+ 320   1      
+ 321   1          return 0;
+ 322   1      }
+*** WARNING C280 IN LINE 300 OF register.c: 'len': unreferenced local variable
+ 323          
+ 324          u8 reg_modbus_single_write_command_response()
+ 325          {
+ 326   1          reg_modbus_send_response_packet(reg_context.packet_data, 8);
+ 327   1              
+ 328   1          return 0;
+ 329   1      }
+ 330          
+ 331          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1272    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =    600      57
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  3 WARNING(S),  0 ERROR(S)

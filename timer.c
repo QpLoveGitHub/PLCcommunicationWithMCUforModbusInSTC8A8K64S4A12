@@ -2,30 +2,32 @@
 #include "intrins.h"
 #include "type.h"
 #include "systemManage.h"
+#include "modbustimer.h"
+#include "SystemState_Normal.h"
+#include "softtimer.h"
 
 
 static u32 g_TM0_Isr_cnt = 0;
 static u32 g_TM1_Isr_cnt = 0;
+sbit P10_T = P1^0;
+sbit P11_T = P1^1;
+
+u32 g_current_system_time = 0;
+u32 g_history_system_time = 0;
+extern bool timer_usingTimer0_Enable;
+
 
 
 void TM0_Isr() interrupt 1 using 1
-{
-	TimeSlice_Count();
-
-	if(g_TM0_Isr_cnt++ >= 2000)
-	{
-		g_TM0_Isr_cnt = 0;
-		//P10 = !P10; //测试端口     
-	}
-	               
+{	
+	TimeSlice_Count();               
 }
 
 void TM1_Isr() interrupt 3 using 1
 {
-	if(g_TM1_Isr_cnt++ >= 100)
+	if(true == timer_usingTimer0_Enable)
 	{
-		g_TM1_Isr_cnt = 0;
-		//P11 = !P11; //测试端口     
+		g_current_system_time++;
 	}
 }
 
@@ -40,6 +42,7 @@ void timer0_init()
 	ET0 = 1; //使能定时器中断
 }
 
+//1ms per interrupt
 void timer1_init()
 {
 	TMOD = 0x00;
