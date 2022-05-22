@@ -2,7 +2,7 @@
 #include "register.h"
 #include "timer.h"
 #include "usart.h"
-#include "softtimer.h"
+//#include "softtimer.h"
 #include "string.h"
 #include "crc.h"
 #include "main.h"
@@ -28,6 +28,10 @@ u16 __local_reg_data[120] = {0};
 
 u8 reg_single_write_process(u8 *buf, u16 len);
 u8 reg_modbus_single_write_command_response();
+u8 reg_multi_readInputRegister_process(u8 *buf, u16 len);
+u8 reg_modbus_readInputRegister_command_response(u16 *reg_data, u16 reg_num);
+
+
 
 
 void Notify_ModbusRtu_Register_IsReceived_Message(void)
@@ -219,6 +223,7 @@ u8 reg_request_dispatch(u8 *buf, u16 len)
     if ((buf[1] != REG_MODBUS_OPR_MULTI_READ)
      && (buf[1] != REG_MODBUS_OPR_MULTI_WRITE)
      && (buf[1] != REG_MODBUS_OPR_SINGLE_WRITE)
+     && (buf[1] != REG_MODBUS_READ_INPUT_REGISTER)
     )
     {
 //        DEBUG_ERROR("REG: invalid modbus opr command %d\r\n", buf[1]);
@@ -240,16 +245,17 @@ u8 reg_request_dispatch(u8 *buf, u16 len)
             reg_single_write_process(buf, len);
             break;
         case BIT_MODBUS_OPR_READ:
-			break;
+					break;
 		
-		case BIT_MODBUS_OPR_WRITE:
-			break;
+				case BIT_MODBUS_OPR_WRITE:
+					break;
 
-		case REG_MODBUS_READ_INPUT_REGISTER:
-			break;
+				case REG_MODBUS_READ_INPUT_REGISTER:
+					reg_multi_readInputRegister_process(buf,len);
+					break;
 			
 		default:
-            break;
+      break;
     }
 
     return 0;
@@ -328,4 +334,53 @@ u8 reg_modbus_single_write_command_response()
     return 0;
 }
 
+u8 reg_multi_readInputRegister_process(u8 *buf, u16 len)
+{
+    u16 reg_addr;
+    u16 reg_num;   
+
+    reg_addr = ccts(buf[2], buf[3]);
+    reg_num  = ccts(buf[4], buf[5]);
+    
+    if (reg_num > 120)
+    {
+//        DEBUG_ERROR("REG: reg num %d is out of scope\r\n", reg_num);
+        return -1;
+    }
+    
+//    DEBUG_TRACE("REG: modbus read command\r\n");
+//    DEBUG_TRACE("REG: modbus reg begin addr %d\r\n", reg_addr);
+//    DEBUG_TRACE("REG: modbus reg addr num %d\r\n", reg_num);
+    
+    memset(__local_reg_data, 0, sizeof(__local_reg_data));
+    reg_read(reg_addr, __local_reg_data, reg_num);
+    reg_modbus_readInputRegister_command_response(__local_reg_data, reg_num);
+    
+    return 0;
+}
+
+
+
+u8 reg_modbus_readInputRegister_command_response(u16 *reg_data, u16 reg_num)
+{
+	 u8  i = 0;
+    u16 crc = 0;
+    
+    reg_context.packet_data[0] = rtu_address;	//0x01;
+    reg_context.packet_data[1] = 0x04;
+    reg_context.packet_data[2] = 2*reg_num;
+    for (i=0; i<reg_num; i++)
+    {
+        reg_context.packet_data[3+2*i]   = (u8)(reg_data[i] >> 8);
+        reg_context.packet_data[3+2*i+1] = (u8)(reg_data[i]);
+    }
+
+    crc = modbus_crc16(reg_context.packet_data, 3+2*reg_num);
+    reg_context.packet_data[3+2*reg_num]   = (u8)(crc);
+    reg_context.packet_data[3+2*reg_num+1] = (u8)(crc >> 8);
+
+    reg_modbus_send_response_packet(reg_context.packet_data, 5+2*reg_num);
+        
+    return 0;
+}
 

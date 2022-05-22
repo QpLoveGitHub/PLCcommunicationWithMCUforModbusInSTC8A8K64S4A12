@@ -5,7 +5,7 @@
 #include "type.h"
 #include "usart.h"
 #include "string.h"
-#include "modbustimer.h"
+//#include "modbustimer.h"
 #include "timer_UsingTimer0.h"
 #include "register.h"
 
@@ -27,7 +27,7 @@ extern u32 g_history_system_time;
 
 void System_Normal_Task(void)
 {
-	u8 i;
+	//u8 i;
 
 	Notify_ModbusRtu_Register_IsReceived_Message();
 	reg_monitor();

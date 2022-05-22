@@ -2,9 +2,9 @@
 #include "intrins.h"
 #include "type.h"
 #include "systemManage.h"
-#include "modbustimer.h"
+//#include "modbustimer.h"
 #include "SystemState_Normal.h"
-#include "softtimer.h"
+//#include "softtimer.h"
 
 
 static u32 g_TM0_Isr_cnt = 0;
