@@ -8,6 +8,10 @@
 //#include "modbustimer.h"
 #include "timer_UsingTimer0.h"
 #include "register.h"
+#include "LCD12864.h"
+#include "LCD1602.h"
+#include "main.h"
+
 
 
 #define LD3 P11
@@ -23,11 +27,13 @@ static u8 g_10ms_cnt = 0;
 u32 g_10ms_uart2_recv_timeout = 0;
 extern u32 g_current_system_time;
 extern u32 g_history_system_time;
+extern u16 __reg_data[REGISTER_DATA_LEN];
 
 
 void System_Normal_Task(void)
 {
 	//u8 i;
+	static u16 __reg_data0_history = 0x0000;
 
 	Notify_ModbusRtu_Register_IsReceived_Message();
 	reg_monitor();
@@ -102,11 +108,26 @@ void System_Normal_Task(void)
                 == System_TimeSlice_ObtainSuccess)
 		{
 			//LD4 = !LD4;
+#ifdef USE_LCD12864
+				if(__reg_data0_history != __reg_data[0])
+				{
+					__reg_data0_history = __reg_data[0];
+					lcd12864_module_Disp(&__reg_data[0]);
+				}
+#endif
+#ifdef USE_LCD1602
+				if(__reg_data0_history != __reg_data[0])
+				{
+					__reg_data0_history = __reg_data[0];
+					lcd1602_module_Disp(&__reg_data[0]);
+				}
+#endif
 		}
 
 		if (SystemState_TimeSlice_Obtain(System_TimeSlice_2s)
 						== System_TimeSlice_ObtainSuccess)
 		{
+
 			
 		}
 

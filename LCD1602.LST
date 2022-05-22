@@ -1,0 +1,213 @@
+C51 COMPILER V9.60.0.0   LCD1602                                                           05/22/2022 14:19:16 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE LCD1602
+OBJECT MODULE PLACED IN LCD1602.OBJ
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE LCD1602.c LARGE OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND TABS(2)
+
+line level    source
+
+   1          #include "STC15F2K60S2.h"
+   2          #include "LCD1602.h"
+   3          
+   4          #define  uint unsigned int  
+   5          #define  uchar unsigned char 
+   6          #define CLOUNM2_OFFSET (0x40+0)
+   7          sbit rs=P4^0;    
+   8          sbit rw=P4^1;        
+   9          sbit en=P4^2;        
+  10          
+  11          sbit lcdsel=P4^3; 
+  12          //uchar code table[]=" lCD1602 check ok"; 
+  13          uchar code table[]=" MODBUS  check ok"; 
+  14          
+  15          //uchar code table1[]="  --Jellina";             
+  16          //uchar  table1[]="  --Jellina";  
+  17          uchar  table1[]="  --ZZCL   ";  
+  18          
+  19          
+  20          
+  21          void delay(uint n)                 
+  22          { 
+  23   1          uint x,y;  
+  24   1          for(x=n;x>0;x--) 
+  25   1              for(y=110;y>0;y--); 
+  26   1      } 
+  27          
+  28          void delay_1s()
+  29          {
+  30   1        delay(100000);
+  31   1      }
+  32          
+  33          void lcd_wcom(uchar com)              
+  34          { 
+  35   1          rs=0;            
+  36   1          rw=0;             
+  37   1          P2=com;           
+  38   1          delay(5);            
+  39   1          en=1;           
+  40   1          en=0; 
+  41   1      } 
+  42          void lcd_wdat(uchar dat)    
+  43          { 
+  44   1          rs=1;        
+  45   1          rw=0;        
+  46   1          P2=dat;        
+  47   1          delay(5);        
+  48   1          en=1;        
+  49   1          en=0; 
+  50   1      } 
+  51          void lcd_init()              
+  52          { 
+  53   1          lcd_wcom(0x38);       
+  54   1          lcd_wcom(0x0c);     
+  55   1          lcd_wcom(0x06);   
+C51 COMPILER V9.60.0.0   LCD1602                                                           05/22/2022 14:19:16 PAGE 2   
+
+  56   1          lcd_wcom(0x01);   
+  57   1      } 
+  58          
+  59          #if 0
+              void main()          
+              {     
+               uchar n,m=0; 
+              
+                P4M1=0x00;
+                P4M0=0x00;
+                P2M0=0xff;
+                P2M1=0x00;  
+                
+                lcdsel = 1;
+                  lcd_init();                 
+                  lcd_wcom(0x80);   
+                  for(m=0;m<17;m++)     
+                  { 
+                          lcd_wdat(table[m]);           
+                          delay(200); 
+                  } 
+                  
+                  lcd_wcom(0x80+CLOUNM2_OFFSET);
+                  for(n=0;n<11;n++)   
+                  {     
+                          lcd_wdat(table1[n]); 
+                         delay(200); 
+                  } 
+                  //while(1);       
+                  while(1)
+                  {
+                    if(table1[5] < 'z')
+                    {
+                      table1[5]++;
+                      delay_1s();
+                      lcd_wcom(0x80+CLOUNM2_OFFSET);
+                      lcd_wdat(table1[5]); 
+                      delay(200);
+                    }
+                    else
+                    {
+                      table1[5] = 'a' -1;
+                    }
+                  }
+              } 
+              #endif
+ 102          
+ 103          void lcd1602_module_init(void)
+ 104          {
+ 105   1        uchar n,m=0; 
+ 106   1      
+ 107   1        P4M1=0x00;
+ 108   1        P4M0=0x00;
+ 109   1        P2M0=0xff;
+ 110   1        P2M1=0x00;  
+ 111   1        
+ 112   1        lcdsel = 1;
+ 113   1          lcd_init();                 
+ 114   1          lcd_wcom(0x80);   
+ 115   1          for(m=0;m<17;m++)     
+ 116   1          { 
+ 117   2             lcd_wdat(table[m]);           
+C51 COMPILER V9.60.0.0   LCD1602                                                           05/22/2022 14:19:16 PAGE 3   
+
+ 118   2             delay(200); 
+ 119   2          } 
+ 120   1          
+ 121   1          lcd_wcom(0x80+CLOUNM2_OFFSET);
+ 122   1          for(n=0;n<11;n++)   
+ 123   1          {     
+ 124   2             lcd_wdat(table1[n]); 
+ 125   2          delay(200); 
+ 126   2          } 
+ 127   1      }
+ 128          
+ 129          void lcd1602_module_Disp(u16 *P_data,u8 len)
+ 130          {
+ 131   1        unsigned char lcd1602_module_Disp_String[] = {"  0x1ZCL   "};
+ 132   1        unsigned char tmBuf[4];
+ 133   1        int i;
+ 134   1        uchar n,m=0;
+ 135   1        tmBuf[0] = (u8)((*P_data) & 0x000F);
+ 136   1        tmBuf[1] = (u8)(((*P_data) >> 4) & 0x000F);
+ 137   1        tmBuf[2] = (u8)(((*P_data) >> 8) & 0x000F);
+ 138   1        tmBuf[3] = (u8)(((*P_data) >> 12) & 0x000F);
+ 139   1      
+ 140   1        for(i = 0;i < 4;i++)
+ 141   1        {
+ 142   2          if(tmBuf[i] < 0xA)
+ 143   2          {
+ 144   3            tmBuf[i] += 48;
+ 145   3          }
+ 146   2          else
+ 147   2          {
+ 148   3            tmBuf[i] += 55;
+ 149   3          }
+ 150   2        }
+ 151   1      
+ 152   1        lcd1602_module_Disp_String[7] = tmBuf[0];
+ 153   1        lcd1602_module_Disp_String[6] = tmBuf[1];
+ 154   1        lcd1602_module_Disp_String[5] = tmBuf[2];
+ 155   1        lcd1602_module_Disp_String[4] = tmBuf[3];
+ 156   1       
+ 157   1      #if 0
+                P4M1=0x00;
+                P4M0=0x00;
+                P2M0=0xff;
+                P2M1=0x00;  
+                
+                  lcdsel = 1;
+                  lcd_init();                 
+                  lcd_wcom(0x80);   
+                  for(m=0;m<17;m++)     
+                  { 
+                     lcd_wdat(table[m]);           
+                     delay(200); 
+                  } 
+              #endif
+ 172   1          
+ 173   1          lcd_wcom(0x80+CLOUNM2_OFFSET);
+ 174   1          for(n=0;n<11;n++)   
+ 175   1          {     
+ 176   2             lcd_wdat(lcd1602_module_Disp_String[n]); 
+ 177   2          delay(200); 
+ 178   2          } 
+ 179   1      }
+C51 COMPILER V9.60.0.0   LCD1602                                                           05/22/2022 14:19:16 PAGE 4   
+
+*** WARNING C280 IN LINE 129 OF LCD1602.c: 'len': unreferenced local variable
+ 180          
+ 181          
+ 182          
+ 183          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    398    ----
+   CONSTANT SIZE    =     30    ----
+   XDATA SIZE       =     12      21
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)

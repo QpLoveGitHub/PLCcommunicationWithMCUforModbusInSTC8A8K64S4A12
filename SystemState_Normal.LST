@@ -1,0 +1,171 @@
+C51 COMPILER V9.60.0.0   SYSTEMSTATE_NORMAL                                                05/22/2022 14:20:19 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE SYSTEMSTATE_NORMAL
+OBJECT MODULE PLACED IN SystemState_Normal.OBJ
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE SystemState_Normal.c LARGE OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND T
+                    -ABS(2)
+
+line level    source
+
+   1          #include "reg51.h"
+   2          #include "SystemManageDef.h"
+   3          #include "SystemState_Normal.h"
+   4          #include "SystemManage.h"
+   5          #include "type.h"
+   6          #include "usart.h"
+   7          #include "string.h"
+   8          //#include "modbustimer.h"
+   9          #include "timer_UsingTimer0.h"
+  10          #include "register.h"
+  11          #include "LCD12864.h"
+  12          #include "LCD1602.h"
+  13          #include "main.h"
+  14          
+  15          
+  16          
+  17          #define LD3 P11
+  18          #define LD4 P10
+  19          #define TEST_PORT_PIN P12
+  20          
+  21          sbit P10 = P1^0;
+  22          sbit P11 = P1^1;
+  23          sbit P13 = P1^3;
+  24          sbit P00 = P0^0;
+  25          
+  26          static u8 g_10ms_cnt = 0;
+  27          u32 g_10ms_uart2_recv_timeout = 0;
+  28          extern u32 g_current_system_time;
+  29          extern u32 g_history_system_time;
+  30          extern u16 __reg_data[REGISTER_DATA_LEN];
+  31          
+  32          
+  33          void System_Normal_Task(void)
+  34          {
+  35   1        //u8 i;
+  36   1        static u16 __reg_data0_history = 0x0000;
+  37   1      
+  38   1        Notify_ModbusRtu_Register_IsReceived_Message();
+  39   1        reg_monitor();
+  40   1        
+  41   1        if (SystemState_TimeSlice_Obtain(System_TimeSlice_1ms)  == System_TimeSlice_ObtainSuccess)
+  42   1          {
+  43   2      
+  44   2      
+  45   2          if (SystemState_TimeSlice_Obtain(System_TimeSlice_10ms)//10ms
+  46   2            == System_TimeSlice_ObtainSuccess)
+  47   2          {
+  48   3              if(g_10ms_cnt++ >= 20)
+  49   3              {
+  50   4                g_10ms_cnt = 0;     
+  51   4              }
+  52   3              if(g_10ms_uart2_recv_timeout++ >= 5)
+  53   3              {
+  54   4                Usart2_Runtime_Var.Uart_RecvData_IsNewFrame = true;
+C51 COMPILER V9.60.0.0   SYSTEMSTATE_NORMAL                                                05/22/2022 14:20:19 PAGE 2   
+
+  55   4                g_10ms_uart2_recv_timeout = 0;
+  56   4              }
+  57   3            
+  58   3          }
+  59   2      
+  60   2           if (SystemState_TimeSlice_Obtain(System_TimeSlice_20ms)//20ms
+  61   2                      == System_TimeSlice_ObtainSuccess)
+  62   2              {
+  63   3      //          if(true == timer_usingTimer0_IsTimerout(0,3000))
+  64   3      //          {
+  65   3      //            
+  66   3      //        SendString("timer_usingTimer0_IsTimerout(0,3000)\r\n");
+  67   3      //        timer_usingTimer0_StartTimer(0);
+  68   3      //      }
+  69   3      //        
+  70   3              }
+  71   2      
+  72   2          if (SystemState_TimeSlice_Obtain(System_TimeSlice_50ms)
+  73   2                      == System_TimeSlice_ObtainSuccess)
+  74   2              {
+  75   3                //LD4 = !LD4;
+  76   3            if((false == Usart2_Runtime_Var.Uart_RecvData_IsNewFrame) && (true == Usart2_Runtime_Var.Uart_RecvData_
+             -Notificatio))
+  77   3            {
+  78   4      #if 0
+                      for(i = 0;i <Usart2_Runtime_Var.Uart_RecvData_Pos;i++)
+                      {
+                        SendData(Usart2_Runtime_Var.Local_Uart2Rec_Buf[i]);
+                      }
+                      memset(Usart2_Runtime_Var.Local_Uart2Rec_Buf,0x0,50);
+                      Usart2_Runtime_Var.Uart_RecvData_Notificatio = false;
+                      Usart2_Runtime_Var.Uart_RecvData_Pos = 0;
+              #endif      
+  87   4            }
+  88   3                
+  89   3              }   
+  90   2      
+  91   2           if (SystemState_TimeSlice_Obtain(System_TimeSlice_100ms)
+  92   2                      == System_TimeSlice_ObtainSuccess)
+  93   2              {
+  94   3                
+  95   3              }
+  96   2      
+  97   2           if (SystemState_TimeSlice_Obtain(System_TimeSlice_200ms)
+  98   2                      == System_TimeSlice_ObtainSuccess)
+  99   2              {
+ 100   3              }
+ 101   2      
+ 102   2          if (SystemState_TimeSlice_Obtain(System_TimeSlice_500ms)
+ 103   2                      == System_TimeSlice_ObtainSuccess)
+ 104   2              {
+ 105   3          }
+ 106   2      
+ 107   2          if (SystemState_TimeSlice_Obtain(System_TimeSlice_1s)
+ 108   2                      == System_TimeSlice_ObtainSuccess)
+ 109   2          {
+ 110   3            //LD4 = !LD4;
+ 111   3      #ifdef USE_LCD12864
+                      if(__reg_data0_history != __reg_data[0])
+                      {
+                        __reg_data0_history = __reg_data[0];
+                        lcd12864_module_Disp(&__reg_data[0]);
+C51 COMPILER V9.60.0.0   SYSTEMSTATE_NORMAL                                                05/22/2022 14:20:19 PAGE 3   
+
+                      }
+              #endif
+ 118   3      #ifdef USE_LCD1602
+ 119   3              if(__reg_data0_history != __reg_data[0])
+ 120   3              {
+ 121   4                __reg_data0_history = __reg_data[0];
+ 122   4                lcd1602_module_Disp(&__reg_data[0]);
+*** WARNING C209 IN LINE 122 OF SystemState_Normal.c: '_lcd1602_module_Disp': too few actual parameters
+ 123   4              }
+ 124   3      #endif
+ 125   3          }
+ 126   2      
+ 127   2          if (SystemState_TimeSlice_Obtain(System_TimeSlice_2s)
+ 128   2                  == System_TimeSlice_ObtainSuccess)
+ 129   2          {
+ 130   3      
+ 131   3            
+ 132   3          }
+ 133   2      
+ 134   2          if (SystemState_TimeSlice_Obtain(System_TimeSlice_5s)
+ 135   2                  == System_TimeSlice_ObtainSuccess)
+ 136   2          {
+ 137   3              //LD3 = !LD3;
+ 138   3          }
+ 139   2        }
+ 140   1      }
+ 141          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    184    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      5    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)

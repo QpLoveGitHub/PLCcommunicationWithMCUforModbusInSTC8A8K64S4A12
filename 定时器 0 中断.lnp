@@ -9,6 +9,8 @@
 "usart.obj",
 "crc.obj",
 "register.obj",
-"timer_usingTimer0.obj" 
+"timer_usingTimer0.obj",
+"LCD1602.obj",
+"LCD12864.obj" 
 TO "¶¨Ê±Æ÷ 0 ÖÐ¶Ï" 
 RAMSIZE(256) 

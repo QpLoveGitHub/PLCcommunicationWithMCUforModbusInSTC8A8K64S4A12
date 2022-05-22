@@ -436,6 +436,16 @@
               <FileType>1</FileType>
               <FilePath>.\timer_usingTimer0.c</FilePath>
             </File>
+            <File>
+              <FileName>LCD1602.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\LCD1602.c</FilePath>
+            </File>
+            <File>
+              <FileName>LCD12864.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\LCD12864.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>
